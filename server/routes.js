@@ -120,49 +120,55 @@ router.route('/habits/decrement/:habitId')
     });
   });
   //Deletes a habit.
-DELETE
-/api/habits/:habitId
-
-GET
-/api/habits/report/:userId
-Returns a report of the given user habits.
-
-  //API routes
-  router.route('/movies')
-    .get(function(req, res){
-      MovieModel.find(function(err, movies){
-        if(err){
-          res.status(500).send(err);
-        }
-        res.status(200).json(movies);
-      });
-    });
-  router.route('/movies')
-    .post(function(req, res){
-      MovieModel.create(req.body, function(err, movie) {
+router.route('/habits/:habitId')
+  .delete(function(req, res){
+    HabitModel.findById(req.body.habitId, function (err, habit) {
+      if(err) {
+        return res.status(500).send(err);
+      }
+      if(!habit) {
+        return res.status(404).send('Not Found');
+      }
+      habit.remove(function(err) {
         if(err) {
           return res.status(500).send(err);
         }
-        return res.status(201).json(movie);
+        return res.status(204).send('No Content');
       });
     });
-  router.route('/movies')
-    .delete(function(req, res){
-      MovieModel.findById(req.body.id, function (err, movie) {
-        if(err) {
-          return res.status(500).send(err);
+  });
+  //Returns a report of the given user habits.
+router.route('/habits/report/:userId')
+  .get(function(req, res){
+    HabitModel.find( {Owner: req.params.userId },function(err, habits){
+      if(err){
+        res.status(500).send(err);
+      }
+      //create Report
+      var report = {
+        Range: {
+          Red : 0,
+          Orange : 0,
+          Yellow : 0,
+          Green : 0,
+          Blue : 0
+        },
+        Worst: {Score: Infinity},
+        Best: {Score: -Infinity}
+      };
+      habits.forEach(function(habit, index){
+        var range = getRange(habit);
+        report.Range[range]++;
+        if(habit.Score > report.Best.Score){
+          report.Best = habit;
         }
-        if(!movie) {
-          return res.status(404).send('Not Found');
+        if(habit.Score < report.Worst.Score){
+          report.Worst = habit;
         }
-        movie.remove(function(err) {
-          if(err) {
-            return res.status(500).send(err);
-          }
-          return res.status(204).send('No Content');
-        });
       });
+      res.status(200).json(report);
     });
+  });
   app.use('/api', router);
 
   function getRange(habit){
