@@ -27,7 +27,7 @@ router.get('/', function(req,res){
   //Creates a new habit for the user.
 router.route('/habits/:userId')
   .post(function(req, res){
-    if(!req.body.Score){req.body.Score = 0;}
+    req.body.Score = 0;
     req.body.Owner = req.params.userId;
     HabitModel.create(req.body, function(err, habit) {
       if(err) {
