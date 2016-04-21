@@ -4,8 +4,8 @@
 'use strict';
 
 var express    = require('express');
-var MovieModel = require('./models/movie');
 var HabitModel = require('./models/habit');
+var HabitUtils = require('./models/habit.utils');
 
 module.exports = function(app){
 //Routes for the API
@@ -41,9 +41,9 @@ router.route('/habits/user/:userId')
   .get(function(req, res){
     HabitModel.find( {Owner: req.params.userId },function(err, habits){
       if(err){
-        res.status(500).send(err);
+        return res.status(500).send(err);
       }
-      res.status(200).json(habits);
+      return res.status(200).json(habits);
     });
   });
   //Returns habit information.
@@ -51,12 +51,12 @@ router.route('/habits/:habitId')
   .get(function(req, res){
     HabitModel.findById( req.params.habitId,function(err, habit){
       if(err){
-        res.status(500).send(err);
+        return res.status(500).send(err);
       }
       if(!habit) {
         return res.status(404).send('Not Found');
       }
-      res.status(200).json(habit);
+      return res.status(200).json(habit);
     });
   });
   //Increments score for specified habit.
@@ -65,24 +65,13 @@ router.route('/habits/increment/:habitId')
     if(req.body._id) { delete req.body._id; }
     HabitModel.findById( req.params.habitId,function(err, habit){
       if(err){
-        res.status(500).send(err);
+        return res.status(500).send(err);
       }
       if(!habit) {
         return res.status(404).send('Not Found');
       }
-      //Logic for update
-      var range = getRange(habit);
-      var offset = getScoreOffset(habit);
-      switch (range) {
-        case 'Green':
-          habit.Score += offset/2;
-          break;
-        case 'Blue':
-          habit.Score += 1;
-          break;
-        default:
-          habit.Score += offset;
-      }
+      var inc = HabitUtils.getScoreIncrement(habit);
+      habit.Score += inc;
       habit.save(function (err) {
         if (err) { return handleError(res, err); }
         return res.status(200).json(habit);
@@ -95,24 +84,14 @@ router.route('/habits/decrement/:habitId')
     if(req.body._id) { delete req.body._id; }
     HabitModel.findById( req.params.habitId,function(err, habit){
       if(err){
-        res.status(500).send(err);
+        return res.status(500).send(err);
       }
       if(!habit) {
         return res.status(404).send('Not Found');
       }
       //Logic for update
-      var range = getRange(habit);
-      var offset = getScoreOffset(habit);
-      switch (range) {
-        case 'Orange':
-          habit.Score -= offset*1.5;
-          break;
-        case 'Red':
-          habit.Score -= offset*2;
-          break;
-        default:
-          habit.Score -= offset;
-      }
+      var dec = HabitUtils.getScoreDecrement(habit);
+      habit.Score -= dec;
       habit.save(function (err) {
         if (err) { return handleError(res, err); }
         return res.status(200).json(habit);
@@ -142,7 +121,7 @@ router.route('/habits/report/:userId')
   .get(function(req, res){
     HabitModel.find( {Owner: req.params.userId },function(err, habits){
       if(err){
-        res.status(500).send(err);
+        return res.status(500).send(err);
       }
       //create Report
       var report = {
@@ -157,7 +136,7 @@ router.route('/habits/report/:userId')
         Best: {Score: -Infinity}
       };
       habits.forEach(function(habit, index){
-        var range = getRange(habit);
+        var range = HabitUtils.getRange(habit);
         report.Range[range]++;
         if(habit.Score > report.Best.Score){
           report.Best = habit;
@@ -166,27 +145,8 @@ router.route('/habits/report/:userId')
           report.Worst = habit;
         }
       });
-      res.status(200).json(report);
+      return res.status(200).json(report);
     });
   });
   app.use('/api', router);
-
-  function getRange(habit){
-    var ranges =[
-      {color: 'Red', limit: -Infinity},
-      {color: 'Orange', limit: 0},
-      {color: 'Yellow', limit: 10},
-      {color: 'Green', limit: 40},
-      {color: 'Blue', limit: 50}
-    ];
-    ranges.forEach(function(range){
-      if (habit.Score > range.limit){
-        return range.color;
-      }
-    });
-  }
-  function getScoreOffset(habit){
-    return habit.Difficulty === 'Easy'?   2 :
-           habit.Difficulty === 'Medium'? 4 : 6;
-  }
 };

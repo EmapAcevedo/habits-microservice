@@ -4,6 +4,7 @@
 
 module.exports = {
   mongoDB: {
-    uri: 'mongodb://localhost/habits-dev'
+    //uri: 'mongodb://localhost/habits-dev'
+    uri: 'mongodb://localhost/habits-debug'
   }
 };
