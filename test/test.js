@@ -10,7 +10,7 @@ var HabitModel = require('../server/models/habit');
 var HabitUtils = require('../server/models/habit.utils');
 
 describe('Habit Microservice', function() {
-  var url = 'http://localhost:9000/api';
+  var url = 'http://localhost:'+config.port+'/api';
   var habitId;
   before(function(done) {
     // use the test db
