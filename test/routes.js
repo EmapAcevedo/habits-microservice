@@ -396,4 +396,135 @@ describe('Habit Microservice', function() {
       });
     });
   });
+  describe('Delete',function(){
+    it('should return an error for invalid id', function (done){
+      request(url)
+      .delete('/habits/foo.bar@mail')
+      .send()
+      .end(function(err,res){
+        if(err){throw err;}
+        res.should.have.status(500);
+        done();
+      });
+    });
+    it('should return not found for unexisting id', function (done){
+      request(url)
+      .delete('/habits/000000000000000000d00001')
+      .send()
+      .end(function(err,res){
+        if(err){throw err;}
+        res.should.have.status(404);
+        done();
+      });
+    });
+    it('should delete and return the data on success',function(done){
+      var habit = { //expected
+        Owner: "foo.bar@mail",
+        Description: "Test my APIs",
+        Type: "Good",
+        Difficulty: "Hard",
+        Score: -3
+      };
+      request(url)
+      .delete('/habits/'+habitId)
+      .send()
+      .expect('Content-Type', /json/)
+      .expect(200) //Status Code
+      .end(function(err,res){
+        if(err){throw err;}
+        res.body._id.should.equal(habitId);
+        res.body.Owner.should.equal(habit.Owner);
+        res.body.Description.should.equal(habit.Description);
+        res.body.Type.should.equal(habit.Type);
+        res.body.Difficulty.should.equal(habit.Difficulty);
+        res.body.Score.should.equal(habit.Score);
+        request(url)
+        .delete('/habits/'+habitId)
+        .send()
+        .end(function(err,res){
+          res.should.have.status(404);
+          done();
+        });
+      });
+    });
+  });
+  describe('Report',function(){
+    it('should return a report for the given user',function(done){
+      var expected = {
+        Range: {
+          Red : 1,
+          Orange : 1,
+          Yellow : 0,
+          Green : 1,
+          Blue : 1
+        },
+        Best: {
+          Owner: 'foo.bar@mail',
+          Description: 'Work on final projects',
+          Type: 'Both',
+          Difficulty: 'Hard',
+          Score: 54 //blue
+        },
+        Worst:{
+          Owner: 'foo.bar@mail',
+          Description: 'Sleep 6 hours',
+          Type: 'Both',
+          Difficulty: 'Hard',
+          Score: -7 //red
+        }
+      };
+      request(url)
+      .get('/habits/report/foo.bar@mail')
+      .send()
+      .expect('Content-Type', /json/)
+      .expect(200) //Status Code
+      .end(function(err,res){
+        if(err){throw err;}
+        //Range
+        res.body.Range.Red.should.equal(expected.Range.Red);
+        res.body.Range.Orange.should.equal(expected.Range.Orange);
+        res.body.Range.Yellow.should.equal(expected.Range.Yellow);
+        res.body.Range.Green.should.equal(expected.Range.Green);
+        res.body.Range.Blue.should.equal(expected.Range.Blue);
+        //Best
+        res.body.Best.should.have.property('_id');
+        res.body.Best.Owner.should.equal(expected.Best.Owner);
+        res.body.Best.Description.should.equal(expected.Best.Description);
+        res.body.Best.Type.should.equal(expected.Best.Type);
+        res.body.Best.Difficulty.should.equal(expected.Best.Difficulty);
+        res.body.Best.Score.should.equal(expected.Best.Score);
+        //Worst
+        res.body.Worst.should.have.property('_id');
+        res.body.Worst.Owner.should.equal(expected.Worst.Owner);
+        res.body.Worst.Description.should.equal(expected.Worst.Description);
+        res.body.Worst.Type.should.equal(expected.Worst.Type);
+        res.body.Worst.Difficulty.should.equal(expected.Worst.Difficulty);
+        res.body.Worst.Score.should.equal(expected.Worst.Score);
+        done();
+      });
+
+    });
+  });
+  describe('Delete All', function(){
+    it('should delete all entries for a user', function(done){
+      request(url)
+      .delete('/habits/user/foo.bar@mail')
+      .send()
+      .expect(204) //Status Code
+      .end(function(err,res){
+        if(err){throw err;}
+        request(url)
+        .get('/habits/user/foo.bar@mail')
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(200) //Status Code
+        .end(function(err,res){
+          if(err){throw err;}
+          res.body.should.be.Array();
+          res.body.length.should.equal(0);
+          done();
+        });
+      });
+    });
+  });
 });

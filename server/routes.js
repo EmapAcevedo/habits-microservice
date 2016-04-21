@@ -101,7 +101,7 @@ router.route('/habits/decrement/:habitId')
   //Deletes a habit.
 router.route('/habits/:habitId')
   .delete(function(req, res){
-    HabitModel.findById(req.body.habitId, function (err, habit) {
+    HabitModel.findById(req.params.habitId, function (err, habit) {
       if(err) {
         return res.status(500).send(err);
       }
@@ -112,7 +112,7 @@ router.route('/habits/:habitId')
         if(err) {
           return res.status(500).send(err);
         }
-        return res.status(204).send('No Content');
+        return res.status(200).json(habit);
       });
     });
   });
