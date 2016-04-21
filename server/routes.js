@@ -18,9 +18,8 @@ router.use(function(req, res, next) {
 //general routes
 router.get('/', function(req,res){
   res.json({
-    provider: 'http://api.movie-tracking.com',
-    owner: 'Yoab Pizarro',
-    contact: 'yoab [dot] pizarro [at] gmail [dot] com'
+    microservice: 'habits-microservice',
+    owner: 'Yoab Pizarro'
   });
 });
 //API Habits routes
@@ -46,6 +45,18 @@ router.route('/habits/user/:userId')
       return res.status(200).json(habits);
     });
   });
+
+  //Delete all habits for a specified user.
+router.route('/habits/user/:userId')
+  .delete(function(req, res){
+    HabitModel.remove({Owner: req.params.userId }, function (err) {
+      if(err){
+        return res.status(500).send(err);
+      }
+      return res.status(204).send('No Content');
+    });
+  });
+
   //Returns habit information.
 router.route('/habits/:habitId')
   .get(function(req, res){
