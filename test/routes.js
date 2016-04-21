@@ -113,8 +113,29 @@ describe('Habit Routes', function() {
       });
     });
   });
-  describe('Get All', function() {
-
+  /*describe('Get All', function() {
+    it('should return a list of objects', function (done){
+      var habit = {
+        Description: "Test my APIs",
+        Type: "Good",
+        Difficulty: "Hard"
+      };
+      request(url)
+      .post('/habits/foo.bar@mail')
+      .send(habit)
+      .expect('Content-Type', /json/)
+      .expect(201) //Status Code
+      .end(function(err,res){
+        if(err){throw err;}
+        res.body.should.have.property('_id');
+        res.body.Owner.should.equal('foo.bar@mail');
+        res.body.Description.should.equal(habit.Description);
+        res.body.Type.should.equal(habit.Type);
+        res.body.Difficulty.shoud.equal(habit.Difficulty);
+        res.body.Score.should.equal(0);
+        done();
+      });
+    });
   });
     //Get all habits for a specified user.
     router.route('/habits/user/:userId')
@@ -125,7 +146,7 @@ describe('Habit Routes', function() {
         }
         res.status(200).json(habits);
       });
-    });
+    });*/
 
 
 

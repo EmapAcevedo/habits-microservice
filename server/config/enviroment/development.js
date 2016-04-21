@@ -4,6 +4,6 @@
 
 module.exports = {
   mongoDB: {
-    uri: 'mongodb://localhost/movieTracking-dev'
+    uri: 'mongodb://localhost/habits-dev'
   }
 };
