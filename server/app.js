@@ -24,6 +24,7 @@ var app = express();
 require ('./config/express')(app);
 require ('./routes') (app);
 
-app.listen(config.port);
+var server = app.listen(config.port);
+console.log(server.address());
 console.log('Server listening on port: ' + config.port);
 module.exports = app;
